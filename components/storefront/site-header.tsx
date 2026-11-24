@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowUpRight, Menu, ShoppingBag } from "lucide-react";
+import { ArrowUpRight, Menu, ShoppingBag, UserRound } from "lucide-react";
 
 const navigation = [
   { href: "/products", label: "Furniture" },
@@ -26,6 +26,7 @@ export function SiteHeader() {
           {navigation.map((item) => <a href={item.href} key={item.href}>{item.label}</a>)}
         </nav>
         <div className="header-actions">
+          <Link className="header-account" href="/account" aria-label="My account"><UserRound size={17} aria-hidden="true" /><span>Account</span></Link>
           <Link className="header-cart" href="/cart" aria-label="Shopping cart"><ShoppingBag size={17} aria-hidden="true" /><span>Cart</span></Link>
           <Link className="header-cta" href="/custom-furniture">Let’s talk <ArrowUpRight size={15} aria-hidden="true" /></Link>
         </div>
@@ -35,6 +36,7 @@ export function SiteHeader() {
             <Brand />
             {navigation.map((item) => <a href={item.href} key={item.href}>{item.label}</a>)}
             <Link href="/cart">Shopping cart</Link>
+            <Link href="/account">My account</Link>
             <Link className="mobile-nav-cta" href="/custom-furniture">Let’s talk <ArrowUpRight size={15} aria-hidden="true" /></Link>
           </nav>
         </details>

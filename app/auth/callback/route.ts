@@ -25,20 +25,20 @@ export async function GET(request: NextRequest) {
   }
 
   if (authError) {
-    return NextResponse.redirect(new URL("/?claim=verification-failed", request.url));
+    return NextResponse.redirect(new URL("/account/claim?result=verification-failed", request.url));
   }
 
   if (isClaimFlow) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user || user.is_anonymous || !user.email_confirmed_at) {
-      return NextResponse.redirect(new URL("/?claim=verification-failed", request.url));
+      return NextResponse.redirect(new URL("/account/claim?result=verification-failed", request.url));
     }
 
     const { error } = await supabase.rpc("claim_customer_records");
     if (error) {
-      return NextResponse.redirect(new URL("/?claim=link-failed", request.url));
+      return NextResponse.redirect(new URL("/account/claim?result=link-failed", request.url));
     }
-    return NextResponse.redirect(new URL("/?claim=complete", request.url));
+    return NextResponse.redirect(new URL("/account?claimed=1", request.url));
   }
 
   return NextResponse.redirect(new URL("/", request.url));
