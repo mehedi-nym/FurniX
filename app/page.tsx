@@ -25,7 +25,7 @@ const paths = [
     icon: Sparkles,
     title: "A room, thoughtfully put together",
     description: "Find a starting point for a home that feels like yours.",
-    href: "#interiors",
+    href: "/interior-design",
     link: "Explore interior design",
   },
 ];
@@ -140,7 +140,7 @@ export default function Home() {
             </p>
             <div className="hero-actions">
               <a className="button button-dark" href="#furniture">Explore furniture <ArrowRight size={16} aria-hidden="true" /></a>
-              <a className="text-link" href="#interiors">Discover interior design <ArrowUpRight size={15} aria-hidden="true" /></a>
+              <a className="text-link" href="/interior-design">Discover interior design <ArrowUpRight size={15} aria-hidden="true" /></a>
             </div>
             <a className="hero-scroll" href="#ways-to-begin"><span>Scroll to explore</span><ArrowDown size={14} aria-hidden="true" /></a>
           </div>
@@ -189,7 +189,7 @@ export default function Home() {
             <p className="eyebrow"><span className="eyebrow-line" />Interior design</p>
             <h2 id="interior-heading">A space that<br />feels like <em>you.</em></h2>
             <p>Bring together textures, light, and the details you love. Start with a reference, a room, or simply a feeling.</p>
-            <a className="text-link" href="#custom">Explore your design ideas <ArrowUpRight size={15} aria-hidden="true" /></a>
+            <a className="text-link" href="/interior-design/quote">Explore your design ideas <ArrowUpRight size={15} aria-hidden="true" /></a>
           </div>
           <div className="interior-art-wrap">
             <InteriorIllustration />

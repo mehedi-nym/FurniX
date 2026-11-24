@@ -3,7 +3,7 @@ import { ArrowUpRight, Menu, ShoppingBag } from "lucide-react";
 
 const navigation = [
   { href: "/products", label: "Furniture" },
-  { href: "/#interiors", label: "Interior design" },
+  { href: "/interior-design", label: "Interior design" },
   { href: "/custom-furniture", label: "Custom ideas" },
   { href: "/#approach", label: "Our approach" },
 ];
