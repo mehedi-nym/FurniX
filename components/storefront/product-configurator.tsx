@@ -52,6 +52,26 @@ export function ProductConfigurator(props: Props) {
     .filter((rule) => rule.target_type === "feature" && !rule.manual_quote_only)
     .map((rule) => rule.target_key))];
 
+  const chosenOptionIds = new Set([...optionIds, ...(selectedVariant?.option_ids ?? [])]);
+  const chosenOptionLabels = optionGroups.flatMap((group) => group.options
+    .filter((option) => chosenOptionIds.has(option.id))
+    .map((option) => `${group.name}: ${option.label}`));
+  const chosenFeatures = Object.entries(features).filter(([, selected]) => selected).map(([name]) => name.replaceAll("_", " "));
+  const prefilledRequirements = [
+    selectedVariant ? `Selected variation: ${selectedVariant.sku}` : "",
+    chosenOptionLabels.length ? `Selected options: ${chosenOptionLabels.join(", ")}` : "",
+    chosenFeatures.length ? `Additional features: ${chosenFeatures.join(", ")}` : "",
+  ].filter(Boolean).join("\n");
+  const quoteParams = new URLSearchParams({
+    productId,
+    productName: props.productName,
+    dimensions: JSON.stringify(dimensions),
+    unit: dimensionsUnit || "ft",
+    quantity: String(quantity),
+    requirements: prefilledRequirements,
+  });
+  const quoteHref = `/custom-furniture?${quoteParams.toString()}`;
+
   useEffect(() => {
     if (!selectedOptionsComplete || (variants.length > 0 && !selectedVariant)) {
       setEstimate(null);
@@ -164,14 +184,14 @@ export function ProductConfigurator(props: Props) {
         <fieldset className="config-group dimension-group">
           <legend>Dimensions {dimensionsUnit && <span>· {dimensionsUnit}</span>}</legend>
           {Object.entries(baseDimensions).map(([key, baseline]) => {
-            const rule = customizationRules.find((item) => item.target_type === "dimension" && item.target_key === key && !item.manual_quote_only);
+            const rule = customizationRules.find((item) => item.target_type === "dimension" && item.target_key === key);
             return (
               <label className="dimension-input" key={key}>
                 <span>{key.replaceAll("_", " ")}</span>
                 <input
                   type="number"
-                  min={rule?.minimum_value ?? baseline}
-                  max={rule?.maximum_value ?? baseline}
+                  min={rule?.minimum_value ?? (rule?.manual_quote_only ? 0.1 : baseline)}
+                  max={rule?.maximum_value ?? (rule?.manual_quote_only ? 10000 : baseline)}
                   step="0.1"
                   value={dimensions[key] ?? baseline}
                   onChange={(event) => setDimensions((current) => ({ ...current, [key]: Number(event.target.value) }))}
@@ -213,7 +233,7 @@ export function ProductConfigurator(props: Props) {
 
       {message && <p className={quoteRequired ? "config-message is-quote" : "config-message"} role="status">{message}</p>}
       {quoteRequired ? (
-        <Link className="button button-dark config-submit" href="/#custom">Request a custom quote <ArrowRight size={16} aria-hidden="true" /></Link>
+        <Link className="button button-dark config-submit" href={quoteHref}>Request a custom quote <ArrowRight size={16} aria-hidden="true" /></Link>
       ) : (
         <button className="button button-dark config-submit" type="button" onClick={addToCart} disabled={loading || !estimate || !selectedOptionsComplete || (variants.length > 0 && !selectedVariant)}>
           Add to cart <ArrowRight size={16} aria-hidden="true" />

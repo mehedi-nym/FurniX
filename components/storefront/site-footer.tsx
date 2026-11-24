@@ -16,7 +16,7 @@ export function SiteFooter() {
           <p className="footer-label">Explore</p>
           <a href="/products">Furniture</a>
           <a href="/#interiors">Interior design</a>
-          <a href="/#custom">Custom ideas</a>
+          <Link href="/custom-furniture">Custom ideas</Link>
         </div>
         <div className="footer-links">
           <p className="footer-label">Discover</p>

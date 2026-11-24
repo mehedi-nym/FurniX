@@ -4,7 +4,7 @@ import { ArrowUpRight, Menu, ShoppingBag } from "lucide-react";
 const navigation = [
   { href: "/products", label: "Furniture" },
   { href: "/#interiors", label: "Interior design" },
-  { href: "/#custom", label: "Custom ideas" },
+  { href: "/custom-furniture", label: "Custom ideas" },
   { href: "/#approach", label: "Our approach" },
 ];
 
@@ -27,7 +27,7 @@ export function SiteHeader() {
         </nav>
         <div className="header-actions">
           <Link className="header-cart" href="/cart" aria-label="Shopping cart"><ShoppingBag size={17} aria-hidden="true" /><span>Cart</span></Link>
-          <a className="header-cta" href="/#custom">Let’s talk <ArrowUpRight size={15} aria-hidden="true" /></a>
+          <Link className="header-cta" href="/custom-furniture">Let’s talk <ArrowUpRight size={15} aria-hidden="true" /></Link>
         </div>
         <details className="mobile-nav">
           <summary aria-label="Open navigation"><Menu size={22} aria-hidden="true" /></summary>
@@ -35,7 +35,7 @@ export function SiteHeader() {
             <Brand />
             {navigation.map((item) => <a href={item.href} key={item.href}>{item.label}</a>)}
             <Link href="/cart">Shopping cart</Link>
-            <a className="mobile-nav-cta" href="/#custom">Let’s talk <ArrowUpRight size={15} aria-hidden="true" /></a>
+            <Link className="mobile-nav-cta" href="/custom-furniture">Let’s talk <ArrowUpRight size={15} aria-hidden="true" /></Link>
           </nav>
         </details>
       </div>

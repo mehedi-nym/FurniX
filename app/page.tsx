@@ -203,7 +203,7 @@ export default function Home() {
               <p className="eyebrow eyebrow-light"><span className="eyebrow-line" />Made for your space</p>
               <h2 id="custom-heading">Have something<br />specific <em>in mind?</em></h2>
               <p>Some ideas start with a sketch or a measurement. Tell us what you’re imagining and we’ll help you find a way forward.</p>
-              <a className="button button-light" href="#approach">Start with an idea <ArrowRight size={16} aria-hidden="true" /></a>
+              <a className="button button-light" href="/custom-furniture">Start with an idea <ArrowRight size={16} aria-hidden="true" /></a>
             </div>
             <div className="custom-graphic" aria-hidden="true">
               <div className="custom-graphic-frame">
