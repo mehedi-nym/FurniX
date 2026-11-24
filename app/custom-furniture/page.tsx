@@ -3,6 +3,7 @@ import { SiteHeader } from "@/components/storefront/site-header";
 import { FurnitureQuoteForm } from "@/components/storefront/furniture-quote-form";
 
 export const metadata = { title: "Custom furniture quotation" };
+export const instant = false;
 
 type PageProps = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 

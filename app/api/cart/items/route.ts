@@ -2,12 +2,14 @@ import { NextResponse } from "next/server";
 import { checkoutItemSchema } from "@/lib/checkout/schemas";
 import { getGuestCart } from "@/lib/cart/server";
 import { estimateProductPrice, PricingError } from "@/lib/catalog/pricing";
+import { readBoundedJson, RequestBodyError } from "@/lib/http/request-body";
 
 export async function POST(request: Request) {
   let body: unknown;
   try {
-    body = await request.json();
-  } catch {
+    body = await readBoundedJson(request, 16 * 1024);
+  } catch (error) {
+    if (error instanceof RequestBodyError) return NextResponse.json({ error: error.message }, { status: error.status });
     return NextResponse.json({ error: "Invalid cart item." }, { status: 400 });
   }
 

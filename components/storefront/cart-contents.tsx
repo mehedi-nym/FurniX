@@ -44,7 +44,18 @@ export function CartContents() {
     }
   }
 
-  useEffect(() => { void refresh(); }, []);
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/cart", { cache: "no-store" })
+      .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "Could not load your cart.");
+        if (!cancelled) { setCart(data as CartResponse); setError(""); }
+      })
+      .catch(() => { if (!cancelled) setError("Your cart is temporarily unavailable."); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
 
   async function changeQuantity(item: CartItem, quantity: number) {
     setBusyId(item.id);

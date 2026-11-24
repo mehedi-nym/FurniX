@@ -3,6 +3,7 @@ import { SiteFooter } from "@/components/storefront/site-footer";
 import { SiteHeader } from "@/components/storefront/site-header";
 
 export const metadata = { title: "Order received" };
+export const instant = false;
 
 export default async function CheckoutCompletePage({ searchParams }: { searchParams: Promise<{ reference?: string }> }) {
   const { reference } = await searchParams;

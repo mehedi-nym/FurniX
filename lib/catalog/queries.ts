@@ -172,7 +172,7 @@ export async function getProductBySlug(slug: string) {
       .eq("is_active", true)
       .order("priority", { ascending: true }),
     supabase.from("product_categories")
-      .select("category:categories(id,slug,name)")
+      .select("category:categories(id,slug,name,parent_id)")
       .eq("product_id", productData.id),
   ]);
 
@@ -212,6 +212,6 @@ export async function getProductBySlug(slug: string) {
     optionGroups: productOptions,
     variants,
     customizationRules: (ruleResponse.data ?? []) as CustomizationRule[],
-    categories: (categoryResponse.data ?? []).map((row) => row.category).filter(Boolean) as CatalogCategory[],
+    categories: (categoryResponse.data ?? []).flatMap((row) => row.category ?? []) as CatalogCategory[],
   };
 }

@@ -4,6 +4,7 @@ import { clearGuestCheckoutSession, getGuestCheckoutSession } from "@/lib/checko
 import { getGuestCart } from "@/lib/cart/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { readBoundedJson, RequestBodyError } from "@/lib/http/request-body";
 
 export async function POST(request: Request) {
   let guestSession: Awaited<ReturnType<typeof getGuestCheckoutSession>>;
@@ -15,18 +16,11 @@ export async function POST(request: Request) {
   if (!guestSession) {
     return NextResponse.json({ error: "Start a new checkout session and try again." }, { status: 401 });
   }
-  if (!request.headers.get("content-type")?.toLowerCase().includes("application/json")) {
-    return NextResponse.json({ error: "Invalid request content type." }, { status: 415 });
-  }
-  const declaredLength = Number(request.headers.get("content-length") ?? 0);
-  if (declaredLength > 64 * 1024) {
-    return NextResponse.json({ error: "Checkout request is too large." }, { status: 413 });
-  }
-
   let body: unknown;
   try {
-    body = await request.json();
-  } catch {
+    body = await readBoundedJson(request, 64 * 1024);
+  } catch (error) {
+    if (error instanceof RequestBodyError) return NextResponse.json({ error: error.message }, { status: error.status });
     return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
   }
 

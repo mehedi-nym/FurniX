@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 type Method = { id: string; name: string; charge: number };
@@ -8,6 +9,7 @@ type Summary = { items: { id: string; productName: string; quantity: number; pri
 function money(value: number, currency: string) { return new Intl.NumberFormat("en-BD", { style: "currency", currency, maximumFractionDigits: 0 }).format(value); }
 
 export function CheckoutForm({ shippingMethods }: { shippingMethods: Method[] }) {
+  const router = useRouter();
   const [summary, setSummary] = useState<Summary | null>(null);
   const [methodId, setMethodId] = useState(shippingMethods[0]?.id ?? "");
   const [busy, setBusy] = useState(false);
@@ -25,7 +27,7 @@ export function CheckoutForm({ shippingMethods }: { shippingMethods: Method[] })
       const response = await fetch("/api/checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Checkout could not be completed.");
-      window.location.assign(`/checkout/complete?reference=${encodeURIComponent(data.orderReference)}`);
+      router.push(`/checkout/complete?reference=${encodeURIComponent(data.orderReference)}`);
     } catch (caught) { setError(caught instanceof Error ? caught.message : "Checkout could not be completed."); setBusy(false); }
   }
 

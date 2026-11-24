@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { readBoundedJson, RequestBodyError } from "@/lib/http/request-body";
 
 const requestSchema = z.object({
   email: z.string().trim().email().max(254),
@@ -12,18 +13,11 @@ const genericResponse = {
 };
 
 export async function POST(request: Request) {
-  if (!request.headers.get("content-type")?.toLowerCase().includes("application/json")) {
-    return NextResponse.json({ error: "Invalid request content type." }, { status: 415 });
-  }
-  const declaredLength = Number(request.headers.get("content-length") ?? 0);
-  if (declaredLength > 8 * 1024) {
-    return NextResponse.json({ error: "Request is too large." }, { status: 413 });
-  }
-
   let body: unknown;
   try {
-    body = await request.json();
-  } catch {
+    body = await readBoundedJson(request, 8 * 1024);
+  } catch (error) {
+    if (error instanceof RequestBodyError) return NextResponse.json({ error: error.message }, { status: error.status });
     return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
   }
 

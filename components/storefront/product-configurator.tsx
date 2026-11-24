@@ -27,7 +27,7 @@ export function ProductConfigurator(props: Props) {
   const [dimensions, setDimensions] = useState<Record<string, number>>(baseDimensions);
   const [features, setFeatures] = useState<Record<string, boolean>>({});
   const [quantity, setQuantity] = useState(1);
-  const [estimate, setEstimate] = useState<Estimate | null>(null);
+  const [estimate, setEstimate] = useState<{ key: string; value: Estimate } | null>(null);
   const [quoteRequired, setQuoteRequired] = useState(false);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -71,12 +71,12 @@ export function ProductConfigurator(props: Props) {
     requirements: prefilledRequirements,
   });
   const quoteHref = `/custom-furniture?${quoteParams.toString()}`;
+  const estimateKey = JSON.stringify({ productId, variantId: selectedVariant?.id ?? null, quantity, dimensions, optionIds, features });
+  const currentEstimate = estimate?.key === estimateKey ? estimate.value : null;
+  const canEstimate = selectedOptionsComplete && (variants.length === 0 || Boolean(selectedVariant));
 
   useEffect(() => {
-    if (!selectedOptionsComplete || (variants.length > 0 && !selectedVariant)) {
-      setEstimate(null);
-      return;
-    }
+    if (!canEstimate) return;
     const controller = new AbortController();
     const timeout = window.setTimeout(async () => {
       setLoading(true);
@@ -101,7 +101,7 @@ export function ProductConfigurator(props: Props) {
           setMessage(data.error ?? "Price is unavailable for this selection.");
           return;
         }
-        setEstimate(data as Estimate);
+        setEstimate({ key: estimateKey, value: data as Estimate });
       } catch (error) {
         if (!(error instanceof DOMException && error.name === "AbortError")) {
           setMessage("Price estimate is temporarily unavailable.");
@@ -115,7 +115,7 @@ export function ProductConfigurator(props: Props) {
       window.clearTimeout(timeout);
       controller.abort();
     };
-  }, [productId, quantity, dimensions, optionIds, features, selectedVariant, selectedOptionsComplete, variants.length]);
+  }, [productId, quantity, dimensions, optionIds, features, selectedVariant, canEstimate, estimateKey, variants.length]);
 
   function toggleOption(group: ProductOptionGroup, optionId: string) {
     setOptionIds((current) => {
@@ -227,15 +227,15 @@ export function ProductConfigurator(props: Props) {
       </div>
 
       <div className="config-price" aria-live="polite">
-        <div><span>{loading ? "Updating price…" : "Estimated total"}</span><strong>{estimate ? money(estimate.lineTotal, estimate.currency) : "—"}</strong></div>
-        {estimate?.breakdown.map((item, index) => <small key={`${item.name}-${index}`}>{item.name}: + {money(item.amount, estimate.currency)}</small>)}
+        <div><span>{loading ? "Updating price…" : "Estimated total"}</span><strong>{currentEstimate ? money(currentEstimate.lineTotal, currentEstimate.currency) : "—"}</strong></div>
+        {currentEstimate?.breakdown.map((item, index) => <small key={`${item.name}-${index}`}>{item.name}: + {money(item.amount, currentEstimate.currency)}</small>)}
       </div>
 
       {message && <p className={quoteRequired ? "config-message is-quote" : "config-message"} role="status">{message}</p>}
       {quoteRequired ? (
         <Link className="button button-dark config-submit" href={quoteHref}>Request a custom quote <ArrowRight size={16} aria-hidden="true" /></Link>
       ) : (
-        <button className="button button-dark config-submit" type="button" onClick={addToCart} disabled={loading || !estimate || !selectedOptionsComplete || (variants.length > 0 && !selectedVariant)}>
+        <button className="button button-dark config-submit" type="button" onClick={addToCart} disabled={loading || !currentEstimate || !selectedOptionsComplete || (variants.length > 0 && !selectedVariant)}>
           Add to cart <ArrowRight size={16} aria-hidden="true" />
         </button>
       )}

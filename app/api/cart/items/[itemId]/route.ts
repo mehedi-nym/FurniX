@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getGuestCart } from "@/lib/cart/server";
 import { estimateProductPrice, PricingError } from "@/lib/catalog/pricing";
+import { readBoundedJson, RequestBodyError } from "@/lib/http/request-body";
 
 const quantitySchema = z.object({ quantity: z.number().int().min(1).max(20) }).strict();
 
@@ -14,8 +15,9 @@ export async function PATCH(request: Request, context: RouteContext) {
 
   let body: unknown;
   try {
-    body = await request.json();
-  } catch {
+    body = await readBoundedJson(request, 8 * 1024);
+  } catch (error) {
+    if (error instanceof RequestBodyError) return NextResponse.json({ error: error.message }, { status: error.status });
     return NextResponse.json({ error: "Invalid quantity." }, { status: 400 });
   }
   const parsed = quantitySchema.safeParse(body);

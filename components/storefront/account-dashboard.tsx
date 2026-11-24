@@ -23,7 +23,10 @@ export function AccountDashboard(props: Props) {
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
-  const requests = [...props.furnitureRequests.map((row) => ({ ...row, kind: "Furniture" })), ...props.interiorRequests.map((row) => ({ ...row, kind: "Interior" }))].sort((a, b) => String(b.created_at).localeCompare(String(a.created_at)));
+  const requests = [
+    ...props.furnitureRequests.map((row) => ({ row, kind: "Furniture" })),
+    ...props.interiorRequests.map((row) => ({ row, kind: "Interior" })),
+  ].sort((a, b) => String(b.row.created_at).localeCompare(String(a.row.created_at)));
 
   async function saveProfile(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); setPending(true); setError(""); setNotice("");
@@ -84,7 +87,7 @@ export function AccountDashboard(props: Props) {
     </section>
 
     <section className="account-section"><div className="account-section-title"><div><p className="eyebrow">Made for you</p><h2>Design requests</h2></div><Link className="text-link" href="/custom-furniture">Start a furniture request</Link></div>
-      {requests.length ? <div className="account-record-list">{requests.map((request) => <article className="account-record" key={String(request.id)}><div className="account-record-top"><div><span className="account-reference">{String(request.public_reference)}</span><span className="account-muted"> · {String(request.kind)} · {date(request.created_at)}</span></div><span className="account-status">{label(request.status)}</span></div><p className="account-record-description">{String(request.description)}</p>{request.property_type ? <p className="account-muted">{label(request.property_type)} · {Number(request.total_square_feet).toLocaleString()} sq ft</p> : null}</article>)}</div> : <p className="account-empty">Your furniture and interior design requests will appear here.</p>}
+      {requests.length ? <div className="account-record-list">{requests.map(({ row, kind }) => <article className="account-record" key={String(row.id)}><div className="account-record-top"><div><span className="account-reference">{String(row.public_reference)}</span><span className="account-muted"> · {kind} · {date(row.created_at)}</span></div><span className="account-status">{label(row.status)}</span></div><p className="account-record-description">{String(row.description)}</p>{row.property_type ? <p className="account-muted">{label(row.property_type)} · {Number(row.total_square_feet).toLocaleString()} sq ft</p> : null}</article>)}</div> : <p className="account-empty">Your furniture and interior design requests will appear here.</p>}
     </section>
 
     <section className="account-section"><div className="account-section-title"><div><p className="eyebrow">Pricing and scope</p><h2>Quotations</h2></div></div>
@@ -92,7 +95,7 @@ export function AccountDashboard(props: Props) {
         const quoteRevisions = props.revisions.filter((revision) => revision.quotation_id === quotation.id);
         const active = quoteRevisions.find((revision) => Number(revision.revision_number) === Number(quotation.current_revision));
         const items = active ? props.quotationItems.filter((item) => item.revision_id === active.id) : [];
-        const open = quotation.status === "sent" && active?.status === "sent" && (!active.valid_until || new Date(String(active.valid_until)).getTime() > Date.now());
+        const open = quotation.status === "sent" && active?.status === "sent";
         return <article className="account-record" key={String(quotation.id)}><div className="account-record-top"><div><span className="account-reference">{String(quotation.public_reference)}</span><span className="account-muted"> · {date(quotation.created_at)} · Revision {String(quotation.current_revision)}</span></div><span className="account-status">{label(active?.status ?? quotation.status)}</span></div>{active ? <><p className="account-record-description">{String(active.terms || "Quotation details")}{active.valid_until ? ` · Valid until ${date(active.valid_until)}` : ""}</p>{items.map((item, index) => <div className="account-quote-item" key={`${String(active.id)}-${index}`}><span>{String(item.description)} × {String(item.quantity)}</span><span>{money(item.line_total, active.currency)}</span></div>)}<div className="account-record-bottom"><span>Quotation total</span><strong>{money(active.total, active.currency)}</strong></div>{open && <div className="account-response-actions"><button type="button" disabled={pending} onClick={() => respond(String(quotation.id), Number(active.revision_number), "accepted")}>Accept quotation</button><button type="button" disabled={pending} onClick={() => respond(String(quotation.id), Number(active.revision_number), "rejected")}>Decline</button></div>}</> : <p className="account-muted">A quotation is being prepared for this request.</p>}</article>;
       })}</div> : <p className="account-empty">Quotations will appear here when they’re ready.</p>}
     </section>

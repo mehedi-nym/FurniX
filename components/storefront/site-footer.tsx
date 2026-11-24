@@ -14,14 +14,14 @@ export function SiteFooter() {
         </div>
         <div className="footer-links">
           <p className="footer-label">Explore</p>
-          <a href="/products">Furniture</a>
+          <Link href="/products">Furniture</Link>
           <Link href="/interior-design">Interior design</Link>
           <Link href="/custom-furniture">Custom ideas</Link>
         </div>
         <div className="footer-links">
           <p className="footer-label">Discover</p>
-          <a href="/#approach">Our approach</a>
-          <a href="/#main-content">Back to top <ArrowUpRight size={13} aria-hidden="true" /></a>
+          <Link href="/#approach">Our approach</Link>
+          <Link href="/#main-content">Back to top <ArrowUpRight size={13} aria-hidden="true" /></Link>
         </div>
         <div className="footer-note">
           <span className="footer-note-mark" aria-hidden="true">F—X</span>
@@ -31,7 +31,7 @@ export function SiteFooter() {
       <div className="footer-bottom section-wrap">
         <span>© Furni X</span>
         <span>Designed with room to make it yours.</span>
-        <a href="#main-content">Back to top ↑</a>
+        <Link href="#main-content">Back to top ↑</Link>
       </div>
     </footer>
   );

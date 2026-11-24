@@ -12,7 +12,12 @@ const extensions: Record<string, string> = {
 };
 
 export class QuoteAttachmentError extends Error {
-  constructor(message: string, readonly status: number) { super(message); }
+  readonly status: number;
+
+  constructor(message: string, status: number) {
+    super(message);
+    this.status = status;
+  }
 }
 
 export type PreparedQuoteAttachment = {

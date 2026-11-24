@@ -4,8 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { furnitureQuoteSchema } from "@/lib/quotations/furniture-schema";
 import { createQuoteCustomer } from "@/lib/quotations/server";
 import { prepareQuoteAttachments, QuoteAttachmentError, removeQuoteAttachments, uploadQuoteAttachments, type PreparedQuoteAttachment } from "@/lib/quotations/attachments";
-
-export const runtime = "nodejs";
+import { readQuoteFormData, RequestBodyError } from "@/lib/http/request-body";
 
 const maxRequestBytes = 9 * 1024 * 1024;
 
@@ -32,11 +31,9 @@ export async function POST(request: Request) {
 
   let form: FormData;
   try {
-    if (!request.headers.get("content-type")?.toLowerCase().includes("multipart/form-data")) {
-      return NextResponse.json({ error: "Use the quotation form to submit your request." }, { status: 415 });
-    }
-    form = await request.formData();
-  } catch {
+    form = await readQuoteFormData(request, maxRequestBytes);
+  } catch (error) {
+    if (error instanceof RequestBodyError) return NextResponse.json({ error: error.message }, { status: error.status });
     return NextResponse.json({ error: "The submitted form could not be read." }, { status: 400 });
   }
 

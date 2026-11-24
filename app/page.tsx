@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { ArrowDown, ArrowRight, ArrowUpRight, Ruler, Shapes, Sparkles } from "lucide-react";
 import { SiteFooter } from "@/components/storefront/site-footer";
 import { SiteHeader } from "@/components/storefront/site-header";

@@ -3,9 +3,9 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createQuoteCustomer } from "@/lib/quotations/server";
 import { prepareQuoteAttachments, QuoteAttachmentError, removeQuoteAttachments, uploadQuoteAttachments, type PreparedQuoteAttachment } from "@/lib/quotations/attachments";
+import { readQuoteFormData, RequestBodyError } from "@/lib/http/request-body";
 import { interiorQuoteSchema } from "@/lib/interiors/quote-schema";
 
-export const runtime = "nodejs";
 const maxRequestBytes = 9 * 1024 * 1024;
 
 function textField(data: FormData, name: string) {
@@ -35,11 +35,11 @@ export async function POST(request: Request) {
 
   let form: FormData;
   try {
-    if (!request.headers.get("content-type")?.toLowerCase().includes("multipart/form-data")) {
-      return NextResponse.json({ error: "Use the quotation form to submit your request." }, { status: 415 });
-    }
-    form = await request.formData();
-  } catch { return NextResponse.json({ error: "The submitted form could not be read." }, { status: 400 }); }
+    form = await readQuoteFormData(request, maxRequestBytes);
+  } catch (error) {
+    if (error instanceof RequestBodyError) return NextResponse.json({ error: error.message }, { status: error.status });
+    return NextResponse.json({ error: "The submitted form could not be read." }, { status: 400 });
+  }
   if (textField(form, "website")) return NextResponse.json({ error: "Unable to submit this request." }, { status: 400 });
 
   const rooms = stringFields(form, "roomTypes").map((roomType) => ({
