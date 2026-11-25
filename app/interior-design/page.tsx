@@ -53,7 +53,7 @@ export default async function InteriorDesignPage({ searchParams }: PageProps) {
                 </div>
               </article>
             );
-          }) : <div className="interior-gallery-empty"><span className="empty-mark">F—X</span><h2>{selectedCategory ? "No references in this category yet" : "Interior ideas are being prepared"}</h2><p>Browse the gallery again soon, or start a quote request with a description of your space.</p><Link className="button button-dark" href="/interior-design/quote">Tell us about your space <ArrowRight size={16} aria-hidden="true" /></Link></div>}
+          }) : <div className="interior-gallery-empty"><span className="empty-mark">F—X</span><h2>{selectedCategory ? "No references in this category yet" : "Interior ideas are being prepared"}</h2><p>Our reference gallery is being prepared. You can still share your room, requirements, and style preferences with us.</p><Link className="button button-dark" href="/interior-design/quote">Tell us about your space <ArrowRight size={16} aria-hidden="true" /></Link><Link className="text-link" href="/products"><span>Browse furniture</span><ArrowUpRight size={14} aria-hidden="true" /></Link></div>}
         </section>
       </main>
       <SiteFooter />

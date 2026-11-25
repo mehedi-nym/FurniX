@@ -317,6 +317,13 @@
 
 .section-wrap { width: min(100% - 84px, 1180px); margin-right: auto; margin-left: auto; }
 .intro-section { display: grid; grid-template-columns: 1.1fr .9fr; align-items: end; gap: 60px; padding-top: 111px; padding-bottom: 45px; }
+.promise-strip { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); margin-top:34px; margin-bottom:85px; border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+.promise-strip > div { display:flex; align-items:flex-start; gap:14px; padding:20px 19px; }
+.promise-strip > div + div { border-left:1px solid var(--line); }
+.promise-strip > div > span { padding-top:2px; color:var(--clay); font-size:9px; letter-spacing:.08em; }
+.promise-strip p { display:grid; gap:5px; margin:0; }
+.promise-strip strong { color:var(--ink); font:400 17px Georgia,"Times New Roman",serif; }
+.promise-strip small { color:var(--muted-ink); font-size:9px; line-height:1.6; }
 .intro-heading-block .eyebrow { margin-bottom: 20px; }
 .intro-heading-block h2 { font-size: clamp(34px, 4vw, 53px); line-height: 1.1; }
 .intro-copy { max-width: 350px; justify-self: end; margin: 0 4% 5px 0; color: var(--muted-ink); font-size: 13px; line-height: 1.8; }
@@ -536,6 +543,8 @@
 .product-card-price { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; margin: 0; font-size: 12px; white-space: nowrap; }
 .product-card-price del { color: #939084; font-size: 10px; }
 .catalog-empty { grid-column: 1/-1; min-height: 310px; display: grid; align-content: center; justify-items: center; text-align: center; }
+.catalog-empty-actions { display:flex; align-items:center; justify-content:center; gap:22px; margin-top:15px; }
+.catalog-empty-actions .button { min-height:42px; }
 .catalog-empty h2,.cart-empty h2 { margin: 12px 0 4px; font: 400 28px Georgia,"Times New Roman",serif; }
 .catalog-empty p,.cart-empty p { color: var(--muted-ink); font-size: 12px; }
 .catalog-bottom { padding-top: 20px; color: #817f73; font-size: 10px; }
@@ -673,6 +682,7 @@
 .interior-gallery-empty h2 { margin:13px 0 3px; font:400 29px Georgia,"Times New Roman",serif; }
 .interior-gallery-empty p { max-width:410px; color:#77766b; font-size:11px; line-height:1.7; }
 .interior-gallery-empty .button { margin-top:12px; }
+.interior-gallery-empty .text-link { display:inline-flex; align-items:center; gap:6px; margin-top:17px; color:#716f63; font-size:10px; }
 .interior-quote-page { display:grid; grid-template-columns:minmax(230px,.62fr) minmax(0,1.38fr); gap:6%; align-items:start; padding-top:75px; padding-bottom:105px; }
 .interior-quote-intro { position:sticky; top:35px; }
 .interior-quote-intro > p:last-child { max-width:355px; margin-top:20px; color:var(--muted-ink); font-size:12px; line-height:1.85; }
@@ -791,3 +801,5 @@
 .account-form :focus-visible,.account-response-actions button:focus-visible,.account-address button:focus-visible,.account-inline-button:focus-visible { outline:2px solid #796049; outline-offset:2px; }
 @media(max-width:700px) { .account-page { padding-top:50px; } .account-heading-row { align-items:flex-start; flex-direction:column; } .account-columns { grid-template-columns:1fr; } .account-section-title { align-items:flex-start; flex-direction:column; } }
 @media(max-width:480px) { .account-page { width:calc(100% - 34px); } .account-card { padding:18px; } .account-record { padding:14px; } .account-record-top { align-items:flex-start; } .account-status { font-size:8px; } .account-response-actions { flex-wrap:wrap; } .account-response-actions button { flex:1; } .account-input-row { grid-template-columns:1fr; } }
+@media(max-width:760px) { .promise-strip { grid-template-columns:1fr; margin-top:23px; margin-bottom:55px; } .promise-strip > div { padding:15px 5px; } .promise-strip > div + div { border-top:1px solid var(--line); border-left:0; } .promise-strip strong { font-size:16px; } }
+@media(max-width:520px) { .catalog-empty-actions { align-items:center; flex-direction:column; gap:13px; } }

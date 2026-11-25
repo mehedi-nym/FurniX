@@ -83,8 +83,11 @@ export default async function ProductsPage({ searchParams }: PageProps) {
             <div className="catalog-empty">
               <span className="empty-mark"><Armchair size={35} strokeWidth={1} aria-hidden="true" /></span>
               <h2>{query || selectedCategory ? "No furniture found" : "The catalogue is taking shape"}</h2>
-              <p>{query || selectedCategory ? "Try another search or explore all furniture." : "Published furniture will appear here as the catalogue is prepared."}</p>
-              {(query || selectedCategory) && <Link href="/products" className="text-link">Clear filters <ArrowRight size={15} aria-hidden="true" /></Link>}
+              <p>{query || selectedCategory ? "Try another search, clear the filters, or tell us what you have in mind." : "New pieces will appear here as they’re published. Looking for a particular size or design? Tell us about it."}</p>
+              <div className="catalog-empty-actions">
+                {(query || selectedCategory) && <Link href="/products" className="text-link">Clear filters <ArrowRight size={15} aria-hidden="true" /></Link>}
+                <Link href="/custom-furniture" className="button button-dark">Request a custom piece <ArrowRight size={15} aria-hidden="true" /></Link>
+              </div>
             </div>
           )}
         </section>

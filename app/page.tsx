@@ -1,4 +1,5 @@
 import { ArrowDown, ArrowRight, ArrowUpRight, Ruler, Shapes, Sparkles } from "lucide-react";
+import Link from "next/link";
 import { SiteFooter } from "@/components/storefront/site-footer";
 import { SiteHeader } from "@/components/storefront/site-header";
 
@@ -138,7 +139,7 @@ export default function Home() {
               Furniture and interior ideas shaped around your space, your routines, and the way you want home to feel.
             </p>
             <div className="hero-actions">
-              <a className="button button-dark" href="#furniture">Explore furniture <ArrowRight size={16} aria-hidden="true" /></a>
+              <Link className="button button-dark" href="/products">Explore furniture <ArrowRight size={16} aria-hidden="true" /></Link>
               <a className="text-link" href="/interior-design">Discover interior design <ArrowUpRight size={15} aria-hidden="true" /></a>
             </div>
             <a className="hero-scroll" href="#ways-to-begin"><span>Scroll to explore</span><ArrowDown size={14} aria-hidden="true" /></a>
@@ -149,6 +150,12 @@ export default function Home() {
             <div className="hero-art-caption"><span>01 / 03</span><span>Living, considered</span></div>
           </div>
           <div className="hero-index" aria-hidden="true">F—X&nbsp; / &nbsp;HOME</div>
+        </section>
+
+        <section className="promise-strip section-wrap" aria-label="Shopping with Furni X">
+          <div><span>01</span><p><strong>Browse at your pace</strong><small>Explore furniture without an account.</small></p></div>
+          <div><span>02</span><p><strong>Make it fit your space</strong><small>Choose a listed option or ask for a custom quote.</small></p></div>
+          <div><span>03</span><p><strong>Know your price</strong><small>Prices are checked again securely at checkout.</small></p></div>
         </section>
 
         <section className="intro-section section-wrap" id="ways-to-begin" aria-labelledby="intro-heading">
@@ -178,7 +185,7 @@ export default function Home() {
             <p className="eyebrow eyebrow-light"><span className="eyebrow-line" />Furniture</p>
             <h2 id="furniture-heading">Good design<br />feels like <em>home.</em></h2>
             <p>Find pieces for the moments that make a room yours: slow mornings, shared meals, a little corner to unwind.</p>
-            <a className="button button-light" href="#approach">Get to know our approach <ArrowRight size={16} aria-hidden="true" /></a>
+            <Link className="button button-light" href="/products">Browse the furniture collection <ArrowRight size={16} aria-hidden="true" /></Link>
             <span className="section-mark" aria-hidden="true">FURNITURE / 01</span>
           </div>
         </section>
