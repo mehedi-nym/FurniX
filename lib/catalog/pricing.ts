@@ -1,15 +1,17 @@
 import "server-only";
 
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 
 export type PriceInput = {
   productId: string;
   variantId?: string | null;
   quantity: number;
+  checkStock?: boolean;
   customization: {
     dimensions: Record<string, number>;
     options: string[];
     features: Record<string, boolean>;
+    customSize?: boolean;
   };
 };
 
@@ -29,8 +31,10 @@ function isCurrent(rule: { valid_from: string | null; valid_until: string | null
 }
 
 export async function estimateProductPrice(input: PriceInput) {
-  const admin = createAdminClient();
-  const { data: product, error: productError } = await admin
+  // Public estimates are limited by the published-catalog RLS policies.
+  // Keep the service-role client for trusted checkout writes only.
+  const supabase = await createClient();
+  const { data: product, error: productError } = await supabase
     .from("products")
     .select("id,name,sku,currency,base_price,discount_price,dimensions,availability_status,stock_quantity,is_published")
     .eq("id", input.productId)
@@ -41,7 +45,7 @@ export async function estimateProductPrice(input: PriceInput) {
 
   let variant: { id: string; sku: string; price_override: number | null; price_delta: number; stock_quantity: number | null } | null = null;
   if (input.variantId) {
-    const { data, error } = await admin.from("product_variants")
+    const { data, error } = await supabase.from("product_variants")
       .select("id,sku,price_override,price_delta,stock_quantity")
       .eq("id", input.variantId)
       .eq("product_id", input.productId)
@@ -52,14 +56,14 @@ export async function estimateProductPrice(input: PriceInput) {
   }
 
   const [{ data: groups }, { data: ruleRows }, { data: mappings }] = await Promise.all([
-    admin.from("product_option_groups").select("id,selection_mode,is_required").eq("product_id", input.productId),
-    admin.from("product_customization_rules")
+    supabase.from("product_option_groups").select("id,selection_mode,is_required").eq("product_id", input.productId),
+    supabase.from("product_customization_rules")
       .select("id,name,target_type,target_key,charge_type,amount,per_unit_basis,percentage_base,minimum_value,maximum_value,manual_quote_only,valid_from,valid_until,priority")
       .eq("product_id", input.productId)
       .eq("is_active", true)
       .order("priority", { ascending: true }),
     variant
-      ? admin.from("variant_option_values").select("group_id,option_id").eq("variant_id", variant.id)
+      ? supabase.from("variant_option_values").select("group_id,option_id").eq("variant_id", variant.id)
       : Promise.resolve({ data: [] }),
   ]);
 
@@ -67,12 +71,12 @@ export async function estimateProductPrice(input: PriceInput) {
   if (selectedIds.length !== input.customization.options.length) throw new PricingError("Remove duplicate options.");
   const selectedOptions: Array<{ id: string; group_id: string; label: string; value: string; price_delta: number }> = [];
   if (selectedIds.length) {
-    const { data, error } = await admin.from("product_options")
+    const { data, error } = await supabase.from("product_options")
       .select("id,group_id,label,value,price_delta")
       .in("id", selectedIds)
       .eq("is_active", true);
     if (error || !data || data.length !== selectedIds.length) throw new PricingError("One of the selected options is unavailable.", "unavailable");
-    const { data: optionGroups } = await admin.from("product_option_groups")
+    const { data: optionGroups } = await supabase.from("product_option_groups")
       .select("id,product_id")
       .in("id", data.map((option) => option.group_id));
     const groupProductIds = new Map((optionGroups ?? []).map((group) => [group.id, group.product_id]));
@@ -84,6 +88,8 @@ export async function estimateProductPrice(input: PriceInput) {
 
   const groupRows = groups ?? [];
   const variantMappings = mappings ?? [];
+  const dimensions = input.customization.dimensions;
+  const baseDimensions = (product.dimensions ?? {}) as Record<string, unknown>;
   for (const group of groupRows) {
     const selectedForGroup = selectedOptions.filter((option) => option.group_id === group.id);
     const variantOption = variantMappings.find((mapping) => mapping.group_id === group.id);
@@ -102,9 +108,7 @@ export async function estimateProductPrice(input: PriceInput) {
     throw new PricingError("Choose the required product options.");
   }
   const rules = (ruleRows ?? []).filter((rule) => isCurrent(rule, Date.now()));
-  const dimensions = input.customization.dimensions;
   const features = input.customization.features;
-  const baseDimensions = (product.dimensions ?? {}) as Record<string, unknown>;
 
   for (const [key, value] of Object.entries(dimensions)) {
     const baseline = Number(baseDimensions[key]);
@@ -184,7 +188,8 @@ export async function estimateProductPrice(input: PriceInput) {
   const extra = ruleTotal;
   const lineTotal = money(unitPrice * input.quantity + extra);
   const stock = variant ? variant.stock_quantity : product.stock_quantity;
-  if (product.availability_status === "available" && stock !== null && Number(stock) < input.quantity) {
+  const stockAvailable = product.availability_status !== "available" || stock === null || Number(stock) >= input.quantity;
+  if (input.checkStock !== false && !stockAvailable) {
     throw new PricingError("There is not enough stock for this quantity.", "unavailable");
   }
 
@@ -194,6 +199,7 @@ export async function estimateProductPrice(input: PriceInput) {
     quantity: input.quantity,
     unitPrice: money(lineTotal / input.quantity),
     lineTotal,
+    stockAvailable,
     breakdown,
     variantSku: variant?.sku ?? null,
   };

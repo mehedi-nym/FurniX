@@ -10,7 +10,8 @@ export const checkoutItemSchema = z.object({
     dimensions: dimensionValuesSchema.default({}),
     optionIds: z.array(z.uuid()).max(30).default([]),
     features: z.record(z.string().min(1).max(50), z.boolean()).default({}),
-  }).default({ dimensions: {}, optionIds: [], features: {} }),
+    customSize: z.boolean().default(false),
+  }).default({ dimensions: {}, optionIds: [], features: {}, customSize: false }),
 }).strict();
 
 export const checkoutRequestSchema = z.object({

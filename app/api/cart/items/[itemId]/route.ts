@@ -33,7 +33,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       .maybeSingle();
     if (!item) return NextResponse.json({ error: "Cart item not found." }, { status: 404 });
 
-    const customization = (item.customization ?? {}) as { dimensions?: Record<string, number>; options?: string[]; features?: Record<string, boolean> };
+    const customization = (item.customization ?? {}) as { dimensions?: Record<string, number>; options?: string[]; features?: Record<string, boolean>; customSize?: boolean };
     await estimateProductPrice({
       productId: item.product_id,
       variantId: item.variant_id,
@@ -42,6 +42,7 @@ export async function PATCH(request: Request, context: RouteContext) {
         dimensions: customization.dimensions ?? {},
         options: customization.options ?? [],
         features: customization.features ?? {},
+        customSize: customization.customSize ?? false,
       },
     });
 

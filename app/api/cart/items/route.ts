@@ -25,6 +25,7 @@ export async function POST(request: Request) {
         dimensions: parsed.data.customization.dimensions,
         options: parsed.data.customization.optionIds,
         features: parsed.data.customization.features,
+        customSize: parsed.data.customization.customSize,
       },
     });
     const cart = await getGuestCart(true);
@@ -47,6 +48,7 @@ export async function POST(request: Request) {
         dimensions: parsed.data.customization.dimensions,
         options: parsed.data.customization.optionIds,
         features: parsed.data.customization.features,
+        customSize: parsed.data.customization.customSize,
       },
     });
     if (error) throw error;

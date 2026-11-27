@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, Minus, Plus } from "lucide-react";
 import type { CustomizationRule, ProductOptionGroup, ProductVariant } from "@/lib/catalog/queries";
 
-type Estimate = { currency: string; lineTotal: number; unitPrice: number; breakdown: Array<{ name: string; amount: number }> };
+type Estimate = { currency: string; lineTotal: number; unitPrice: number; stockAvailable: boolean; breakdown: Array<{ name: string; amount: number }> };
 type Props = {
   productId: string;
   productName: string;
@@ -23,8 +23,11 @@ function money(value: number, currency: string) {
 
 export function ProductConfigurator(props: Props) {
   const { productId, currency, baseDimensions, dimensionsUnit, optionGroups, variants, customizationRules } = props;
-  const [optionIds, setOptionIds] = useState<string[]>([]);
+  const [optionIds, setOptionIds] = useState<string[]>(() => variants.length
+    ? variants[0].option_ids
+    : optionGroups.filter((group) => group.is_required).flatMap((group) => group.options[0] ? [group.options[0].id] : []));
   const [dimensions, setDimensions] = useState<Record<string, number>>(baseDimensions);
+  const [customSize, setCustomSize] = useState(false);
   const [features, setFeatures] = useState<Record<string, boolean>>({});
   const [quantity, setQuantity] = useState(1);
   const [estimate, setEstimate] = useState<{ key: string; value: Estimate } | null>(null);
@@ -43,8 +46,11 @@ export function ProductConfigurator(props: Props) {
         }));
   }, [variants, optionGroups, optionIds]);
 
+  const sizeGroup = optionGroups.find((group) => group.name.trim().toLowerCase() === "size");
+  const canCustomizeSize = !variants.length && Object.keys(baseDimensions).length > 0
+    && customizationRules.some((rule) => rule.target_type === "dimension");
   const selectedOptionsComplete = optionGroups
-    .filter((group) => group.is_required)
+    .filter((group) => group.is_required && !(customSize && group.id === sizeGroup?.id))
     .every((group) => selectedVariant?.option_ids.some((id) => group.options.some((option) => option.id === id))
       || optionIds.some((id) => group.options.some((option) => option.id === id)));
 
@@ -71,7 +77,7 @@ export function ProductConfigurator(props: Props) {
     requirements: prefilledRequirements,
   });
   const quoteHref = `/custom-furniture?${quoteParams.toString()}`;
-  const estimateKey = JSON.stringify({ productId, variantId: selectedVariant?.id ?? null, quantity, dimensions, optionIds, features });
+  const estimateKey = JSON.stringify({ productId, variantId: selectedVariant?.id ?? null, quantity, dimensions, optionIds, features, customSize });
   const currentEstimate = estimate?.key === estimateKey ? estimate.value : null;
   const canEstimate = selectedOptionsComplete && (variants.length === 0 || Boolean(selectedVariant));
 
@@ -90,7 +96,7 @@ export function ProductConfigurator(props: Props) {
             productId,
             variantId: selectedVariant?.id ?? null,
             quantity,
-            customization: { dimensions, optionIds, features },
+            customization: { dimensions, optionIds, features, customSize },
           }),
           signal: controller.signal,
         });
@@ -115,7 +121,7 @@ export function ProductConfigurator(props: Props) {
       window.clearTimeout(timeout);
       controller.abort();
     };
-  }, [productId, quantity, dimensions, optionIds, features, selectedVariant, canEstimate, estimateKey, variants.length]);
+  }, [productId, quantity, dimensions, optionIds, features, selectedVariant, canEstimate, estimateKey, variants.length, customSize]);
 
   function toggleOption(group: ProductOptionGroup, optionId: string) {
     setOptionIds((current) => {
@@ -137,7 +143,7 @@ export function ProductConfigurator(props: Props) {
           productId,
           variantId: selectedVariant?.id ?? null,
           quantity,
-          customization: { dimensions, optionIds, features },
+          customization: { dimensions, optionIds, features, customSize },
         }),
       });
       const data = await response.json();
@@ -156,9 +162,9 @@ export function ProductConfigurator(props: Props) {
 
   return (
     <div className="product-configurator">
-      {optionGroups.map((group) => (
+      {optionGroups.filter((group) => !(customSize && group.id === sizeGroup?.id)).map((group) => (
         <fieldset className="config-group" key={group.id}>
-          <legend>{group.name}{group.is_required && <span> · Required</span>}</legend>
+          <legend>{group.name}<span> · {group.is_required ? "Choose one" : "Optional"}</span></legend>
           <div className="config-options">
             {group.options.map((option) => {
               const selected = optionIds.includes(option.id) || Boolean(selectedVariant?.option_ids.includes(option.id));
@@ -173,6 +179,7 @@ export function ProductConfigurator(props: Props) {
                   />
                   <span>{option.label}</span>
                   {option.price_delta > 0 && <small>+ {money(option.price_delta, currency)}</small>}
+                  {option.price_delta === 0 && <small>Included</small>}
                 </label>
               );
             })}
@@ -180,7 +187,24 @@ export function ProductConfigurator(props: Props) {
         </fieldset>
       ))}
 
-      {Object.keys(baseDimensions).length > 0 && (
+      {canCustomizeSize && (
+        <button className="text-button" type="button" onClick={() => {
+          if (!customSize) {
+            if (sizeGroup?.options[0]) setOptionIds((ids) => [...ids.filter((id) => !sizeGroup.options.some((option) => option.id === id)), sizeGroup.options[0].id]);
+            setCustomSize(true);
+          } else {
+            if (sizeGroup) setOptionIds((ids) => ids.filter((id) => !sizeGroup.options.some((option) => option.id === id)));
+            setCustomSize(false);
+          }
+          setDimensions(baseDimensions);
+          setEstimate(null);
+          setMessage("");
+        }}>
+          {customSize ? "Use standard size choices" : "Need a different size? Enter custom dimensions"}
+        </button>
+      )}
+
+      {Object.keys(baseDimensions).length > 0 && customSize && (
         <fieldset className="config-group dimension-group">
           <legend>Dimensions {dimensionsUnit && <span>· {dimensionsUnit}</span>}</legend>
           {Object.entries(baseDimensions).map(([key, baseline]) => {
@@ -191,8 +215,9 @@ export function ProductConfigurator(props: Props) {
                 <input
                   type="number"
                   min={rule?.minimum_value ?? (rule?.manual_quote_only ? 0.1 : baseline)}
-                  max={rule?.maximum_value ?? (rule?.manual_quote_only ? 10000 : baseline)}
+                  max={rule ? (rule.maximum_value ?? 10000) : baseline}
                   step="0.1"
+                  disabled={!rule}
                   value={dimensions[key] ?? baseline}
                   onChange={(event) => setDimensions((current) => ({ ...current, [key]: Number(event.target.value) }))}
                   aria-label={`${key} in ${dimensionsUnit || "the selected unit"}`}
@@ -232,10 +257,11 @@ export function ProductConfigurator(props: Props) {
       </div>
 
       {message && <p className={quoteRequired ? "config-message is-quote" : "config-message"} role="status">{message}</p>}
+      {currentEstimate && !currentEstimate.stockAvailable && <p className="config-message" role="status">This option is currently out of stock. The price estimate is shown for reference.</p>}
       {quoteRequired ? (
         <Link className="button button-dark config-submit" href={quoteHref}>Request a custom quote <ArrowRight size={16} aria-hidden="true" /></Link>
       ) : (
-        <button className="button button-dark config-submit" type="button" onClick={addToCart} disabled={loading || !currentEstimate || !selectedOptionsComplete || (variants.length > 0 && !selectedVariant)}>
+        <button className="button button-dark config-submit" type="button" onClick={addToCart} disabled={loading || !currentEstimate || !currentEstimate.stockAvailable || !selectedOptionsComplete || (variants.length > 0 && !selectedVariant)}>
           Add to cart <ArrowRight size={16} aria-hidden="true" />
         </button>
       )}

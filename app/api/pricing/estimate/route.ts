@@ -20,10 +20,12 @@ export async function POST(request: Request) {
       productId: parsed.data.productId,
       variantId: parsed.data.variantId,
       quantity: parsed.data.quantity,
+      checkStock: false,
       customization: {
         dimensions: parsed.data.customization.dimensions,
         options: parsed.data.customization.optionIds,
         features: parsed.data.customization.features,
+        customSize: parsed.data.customization.customSize,
       },
     });
     return NextResponse.json(price);

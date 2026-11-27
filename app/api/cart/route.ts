@@ -34,7 +34,7 @@ export async function GET() {
     const items = await Promise.all((rows ?? []).map(async (row) => {
       const product = productMap.get(row.product_id);
       if (!product?.is_published) return null;
-      const customization = (row.customization ?? {}) as { dimensions?: Record<string, number>; options?: string[]; features?: Record<string, boolean> };
+      const customization = (row.customization ?? {}) as { dimensions?: Record<string, number>; options?: string[]; features?: Record<string, boolean>; customSize?: boolean };
       let price: Awaited<ReturnType<typeof estimateProductPrice>> | null = null;
       let quoteRequired = false;
       try {
@@ -46,6 +46,7 @@ export async function GET() {
             dimensions: customization.dimensions ?? {},
             options: customization.options ?? [],
             features: customization.features ?? {},
+            customSize: customization.customSize ?? false,
           },
         });
       } catch (error) {
